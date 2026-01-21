@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GL 11+ Practice Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .test-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            color: white;
+            text-align: center;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .test-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .test-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .test-card.maths {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .test-card.verbal {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .test-card.non-verbal {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .test-area, .progress-area {
+            display: none;
+        }
+
+        .test-area.active, .progress-area.active {
+            display: block;
+        }
+
+        .timer {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .question h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .option {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #e8ebff;
+        }
+
+        .option.correct {
+            border-color: #43e97b;
+            background: #e8f8f0;
+        }
+
+        .option.incorrect {
+            border-color: #f5576c;
+            background: #ffe8eb;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .results {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .results h3 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #43e97b;
+            margin: 20px 0;
+        }
+
+        .nvr-canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 15px 0;
+            background: white;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card h4 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .history-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .history-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge.maths { background: #e3f2fd; color: #1976d2; }
+        .badge.verbal { background: #e8f5e9; color: #388e3c; }
+        .badge.nonverbal { background: #fce4ec; color: #c2185b; }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .telegram-config {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .telegram-config h4 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .telegram-config input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .telegram-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .telegram-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .telegram-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 GL 11+ Practice Tests</h1>
+            <p>Master your 11+ exams with timed practice tests</p>
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showSection('home')">Tests</button>
+                <button class="nav-btn" onclick="showSection('progress')">Progress</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="home" class="test-selection">
+                <div class="test-card maths" onclick="startTest('maths')">
+                    <h3>📊 Maths</h3>
+                    <p>15 minutes • 15 questions</p>
+                    <p>Mental arithmetic, problem solving, data handling</p>
+                </div>
+                <div class="test-card verbal" onclick="startTest('verbal')">
+                    <h3>📝 Verbal Reasoning</h3>
+                    <p>20 minutes • 20 questions</p>
+                    <p>Word patterns, analogies, comprehension</p>
+                </div>
+                <div class="test-card non-verbal" onclick="startTest('nonverbal')">
+                    <h3>🔷 Non-Verbal Reasoning</h3>
+                    <p>15 minutes • 15 questions</p>
+                    <p>Pattern recognition, spatial reasoning</p>
+                </div>
+            </div>
+
+            <div id="progress-area" class="progress-area">
+                <h2 style="margin-bottom: 30px; color: #667eea;">📈 Progress Tracker</h2>
+                
+                <div class="telegram-config">
+                    <h4>📱 Telegram Notification Settings</h4>
+                    <input type="text" id="botToken" placeholder="Bot Token (from @BotFather)">
+                    <input type="text" id="chatId" placeholder="Chat ID">
+                    <button class="btn" onclick="saveTelegramConfig()">Save Settings</button>
+                    <div id="telegramStatus"></div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Tests</h4>
+                        <div class="value" id="totalTests">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Average Score</h4>
+                        <div class="value" id="avgScore">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Best Score</h4>
+                        <div class="value" id="bestScore">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Latest Score</h4>
+                        <div class="value" id="latestScore">-</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 20px;">Score Trends</h3>
+                    <canvas id="scoreChart" width="800" height="400"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 20px;">Test History</h3>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Test Type</th>
+                                <th>Score</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999;">No tests completed yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="clearHistory()">Clear All History</button>
+                </div>
+            </div>
+
+            <div id="test-area" class="test-area">
+                <button class="btn back-btn" onclick="goHome()">← Back to Tests</button>
+                <div class="timer" id="timer">Time: 00:00</div>
+                <div id="questions"></div>
+                <div style="text-align: center;">
+                    <button class="btn" onclick="submitTest()">Submit Test</button>
+                </div>
+                <div id="results" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTest = null;
+        let questions = [];
+        let answers = {};
+        let timer = null;
+        let timeRemaining = 0;
+        let testStartTime = null;
+
+        const mathsQuestions = [
+            { q: "What is 234 + 567?", options: ["791", "801", "811", "821"], correct: 1 },
+            { q: "Calculate: 12 × 15", options: ["170", "180", "190", "200"], correct: 1 },
+            { q: "What is 25% of 80?", options: ["15", "20", "25", "30"], correct: 1 },
+            { q: "If a rectangle has length 8cm and width 5cm, what is its perimeter?", options: ["26cm", "28cm", "30cm", "40cm"], correct: 0 },
+            { q: "What is 3/4 + 1/2?", options: ["1/4", "5/4", "4/6", "7/8"], correct: 1 },
+            { q: "A train travels 180km in 3 hours. What is its average speed?", options: ["50km/h", "55km/h", "60km/h", "65km/h"], correct: 2 },
+            { q: "What is the next number in the sequence: 2, 4, 8, 16, ?", options: ["24", "28", "32", "36"], correct: 2 },
+            { q: "Calculate: 144 ÷ 12", options: ["11", "12", "13", "14"], correct: 1 },
+            { q: "What is the area of a triangle with base 10cm and height 6cm?", options: ["30cm²", "40cm²", "50cm²", "60cm²"], correct: 0 },
+            { q: "Round 4,567 to the nearest hundred", options: ["4,500", "4,600", "4,700", "5,000"], correct: 1 },
+            { q: "What is 2³ × 5?", options: ["30", "35", "40", "45"], correct: 2 },
+            { q: "If 5 pencils cost £2.50, how much do 8 pencils cost?", options: ["£3.50", "£4.00", "£4.50", "£5.00"], correct: 1 },
+            { q: "What is the smallest prime number greater than 20?", options: ["21", "22", "23", "25"], correct: 2 },
+            { q: "Calculate: 7² - 15", options: ["29", "34", "39", "44"], correct: 1 },
+            { q: "A bag contains 120 sweets. If 3/8 are red, how many are red?", options: ["40", "45", "50", "55"], correct: 1 }
+        ];
+
+        const verbalQuestions = [
+            { q: "Find the opposite of ANCIENT:", options: ["Modern", "Old", "Historic", "Traditional"], correct: 0 },
+            { q: "Complete: Cat is to Kitten as Dog is to _____", options: ["Pet", "Puppy", "Bark", "Animal"], correct: 1 },
+            { q: "Which word does NOT belong: Rose, Tulip, Carrot, Daisy", options: ["Rose", "Tulip", "Carrot", "Daisy"], correct: 2 },
+            { q: "LAKE is to WATER as DESERT is to:", options: ["Hot", "Sand", "Dry", "Cactus"], correct: 1 },
+            { q: "Find the synonym of BRAVE:", options: ["Scared", "Courageous", "Timid", "Weak"], correct: 1 },
+            { q: "Complete the analogy: GLOVE is to HAND as SHOE is to:", options: ["Sock", "Foot", "Walk", "Lace"], correct: 1 },
+            { q: "Which is the odd one out: Apple, Banana, Potato, Orange", options: ["Apple", "Banana", "Potato", "Orange"], correct: 2 },
+            { q: "TEACHER is to SCHOOL as DOCTOR is to:", options: ["Medicine", "Hospital", "Patient", "Nurse"], correct: 1 },
+            { q: "Find the opposite of EXPAND:", options: ["Grow", "Enlarge", "Contract", "Increase"], correct: 2 },
+            { q: "Complete: Happy, Joyful, Cheerful, _____", options: ["Sad", "Delighted", "Angry", "Tired"], correct: 1 },
+            { q: "AUTHOR is to BOOK as COMPOSER is to:", options: ["Orchestra", "Music", "Piano", "Concert"], correct: 1 },
+            { q: "Which word means the same as ENORMOUS:", options: ["Tiny", "Huge", "Small", "Medium"], correct: 1 },
+            { q: "Complete the sequence: A, C, E, G, _____", options: ["H", "I", "J", "K"], correct: 1 },
+            { q: "WING is to BIRD as FIN is to:", options: ["Water", "Fish", "Swim", "Ocean"], correct: 1 },
+            { q: "Find the odd one out: Triangle, Square, Circle, Rectangle", options: ["Triangle", "Square", "Circle", "Rectangle"], correct: 2 },
+            { q: "Complete: Beginning is to End as Start is to _____", options: ["Begin", "Finish", "Middle", "Continue"], correct: 1 },
+            { q: "Which word does NOT belong: Happy, Sad, Angry, Table", options: ["Happy", "Sad", "Angry", "Table"], correct: 3 },
+            { q: "STEERING WHEEL is to CAR as RUDDER is to:", options: ["Plane", "Boat", "Bicycle", "Train"], correct: 1 },
+            { q: "Find the synonym of RAPID:", options: ["Slow", "Fast", "Careful", "Lazy"], correct: 1 },
+            { q: "Complete the analogy: DAY is to NIGHT as LIGHT is to:", options: ["Bright", "Dark", "Sun", "Moon"], correct: 1 }
+        ];
+
+        const nonVerbalQuestions = [
+            { q: "Which shape completes the pattern?", type: "pattern", correct: 2 },
+            { q: "Find the odd one out:", type: "oddone", correct: 3 },
+            { q: "What comes next in the sequence?", type: "sequence", correct: 1 },
+            { q: "Complete the matrix:", type: "matrix", correct: 0 },
+            { q: "Which shape is rotated 90° clockwise?", type: "rotation", correct: 2 },
+            { q: "Find the mirror image:", type: "mirror", correct: 1 },
+            { q: "Which pattern continues the series?", type: "series", correct: 3 },
+            { q: "Identify the identical shape:", type: "identical", correct: 0 },
+            { q: "What is the next shape in the sequence?", type: "sequence2", correct: 2 },
+            { q: "Complete the analogy:", type: "analogy", correct: 1 },
+            { q: "Find the matching pair:", type: "pair", correct: 3 },
+            { q: "Which shape fits in the space?", type: "fit", correct: 0 },
+            { q: "Identify the pattern rule:", type: "rule", correct: 2 },
+            { q: "Which is the rotated version?", type: "rotate2", correct: 1 },
+            { q: "Complete the grid pattern:", type: "grid", correct: 3 }
+        ];
+
+        function drawNVRQuestion(canvas, type, index) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const patterns = {
+                pattern: () => {
+                    ctx.fillStyle = '#4facfe';
+                    ctx.fillRect(20, 20, 60, 60);
+                    ctx.fillStyle = '#43e97b';
+                    ctx.beginPath();
+                    ctx.arc(120, 50, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fa709a';
+                    ctx.beginPath();
+                    ctx.moveTo(200, 20);
+                    ctx.lineTo(230, 80);
+                    ctx.lineTo(170, 80);
+                    ctx.closePath();
+                    ctx.fill();
+                },
+                oddone: () => {
+                    for (let i = 0; i < 4; i++) {
+                        ctx.fillStyle = i === 2 ? '#f5576c' : '#4facfe';
+                        ctx.fillRect(20 + i * 70, 20, 50, 50);
+                    }
+                },
+                sequence: () => {
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillStyle = '#43e97b';
+                        ctx.fillRect(20 + i * 80, 20, 30 + i * 10, 30 + i * 10);
+                    }
+                }
+            };
+
+            (patterns[type] || patterns.pattern)();
+        }
+
+        function startTest(type) {
+            currentTest = type;
+            answers = {};
+            testStartTime = new Date();
+            
+            if (type === 'maths') {
+                questions = shuffle([...mathsQuestions]).slice(0, 15);
+                timeRemaining = 15 * 60;
+            } else if (type === 'verbal') {
+                questions = shuffle([...verbalQuestions]).slice(0, 20);
+                timeRemaining = 20 * 60;
+            } else {
+                questions = shuffle([...nonVerbalQuestions]).slice(0, 15);
+                timeRemaining = 15 * 60;
+            }
+
+            document.getElementById('home').style.display = 'none';
+            document.getElementById('test-area').classList.add('active');
+            
+            renderQuestions();
+            startTimer();
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question';
+                
+                let html = `<h4>Question ${index + 1}: ${q.q}</h4>`;
+                
+                if (currentTest === 'nonverbal') {
+                    html += `<canvas id="canvas-${index}" width="300" height="100" class="nvr-canvas"></canvas>`;
+                }
+                
+                html += '<div class="options">';
+                q.options.forEach((opt, optIndex) => {
+                    html += `<div class="option" onclick="selectAnswer(${index}, ${optIndex})">${opt}</div>`;
+                });
+                html += '</div>';
+                
+                div.innerHTML = html;
+                container.appendChild(div);
+
+                if (currentTest === 'nonverbal') {
+                    setTimeout(() => {
+                        const canvas = document.getElementById(`canvas-${index}`);
+                        if (canvas) drawNVRQuestion(canvas, q.type, index);
+                    }, 10);
+                }
+            });
+        }
+
+        function selectAnswer(questionIndex, optionIndex) {
+            answers[questionIndex] = optionIndex;
+            
+            const questionDiv = document.querySelectorAll('.question')[questionIndex];
+            questionDiv.querySelectorAll('.option').forEach((opt, i) => {
+                opt.classList.remove('selected');
+                if (i === optionIndex) {
+                    opt.classList.add('selected');
+                }
+            });
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeRemaining--;
+                const mins = Math.floor(timeRemaining / 60);
+                const secs = timeRemaining % 60;
+                document.getElementById('timer').textContent = 
+                    `Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timer);
+                    submitTest();
+                }
+            }, 1000);
+        }
+
+        async function submitTest() {
+            clearInterval(timer);
+            
+            let correct = 0;
+            questions.forEach((q, index) => {
+                const questionDiv = document.querySelectorAll('.question')[index];
+                const options = questionDiv.querySelectorAll('.option');
+                
+                options.forEach((opt, optIndex) => {
+                    if (optIndex === q.correct) {
+                        opt.classList.add('correct');
+                    }
+                    if (answers[index] === optIndex && optIndex !== q.correct) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+
+                if (answers[index] === q.correct) {
+                    correct++;
+                }
+            });
+
+            const percentage = Math.round((correct / questions.length) * 100);
+            
+            // Save to history
+            saveTestResult(correct, questions.length, percentage);
+            
+            // Send Telegram notification
+            await sendTelegramNotification(correct, questions.length, percentage);
+            
+            document.getElementById('results').innerHTML = `
+                <div class="results">
+                    <h3>Test Complete!</h3>
+                    <div class="score">${correct} / ${questions.length}</div>
+                    <p style="font-size: 1.5em; margin: 20px 0;">${percentage}%</p>
+                    <p style="font-size: 1.2em; color: #666;">
+                        ${percentage >= 80 ? '🌟 Excellent work!' : 
+                          percentage >= 60 ? '👍 Good job! Keep practicing.' : 
+                          '💪 Keep working hard!'}
+                    </p>
+                    <button class="btn" onclick="goHome()">Try Another Test</button>
+                    <button class="btn btn-secondary" onclick="showSection('progress')">View Progress</button>
+                </div>
+            `;
+            document.getElementById('results').style.display = 'block';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function saveTestResult(correct, total, percentage) {
+            const history = JSON.parse(localStorage.getItem('testHistory') || '[]');
+            
+            const result = {
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString(),
+                testType: currentTest,
+                correct: correct,
+                total: total,
+                percentage: percentage,
+                timestamp: new Date().getTime()
+            };
+            
+            history.push(result);
+            localStorage.setItem('testHistory', JSON.stringify(history));
+        }
+
+        async function sendTelegramNotification(correct, total, percentage) {
+            const botToken = localStorage.getItem('telegramBotToken');
+            const chatId = localStorage.getItem('telegramChatId');
+            
+            if (!botToken || !chatId) {
+                console.log('Telegram not configured');
+                return;
+            }
+
+            const testNames = {
+                'maths': '📊 Maths',
+                'verbal': '📝 Verbal Reasoning',
+                'nonverbal': '🔷 Non-Verbal Reasoning'
+            };
+
+            const emoji = percentage >= 80 ? '🌟' : percentage >= 60 ? '👍' : '💪';
+            
+            const message = `${emoji} *Test Completed!*\n\n` +
+                `*Test Type:* ${testNames[currentTest]}\n` +
+                `*Score:* ${correct}/${total} (${percentage}%)\n` +
+                `*Date:* ${new Date().toLocaleDateString()}\n` +
+                `*Time:* ${new Date().toLocaleTimeString()}\n\n` +
+                `${percentage >= 80 ? 'Excellent work! 🎉' : 
+                  percentage >= 60 ? 'Good job! Keep practicing. 📚' : 
+                  'Keep working hard! You\'re improving! 💪'}`;
+
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('Telegram notification sent successfully');
+                }
+            } catch (error) {
+                console.error('Failed to send Telegram notification:', error);
+            }
+        }
+
+        function saveTelegramConfig() {
+            const botToken = document.getElementById('botToken').value.trim();
+            const chatId = document.getElementById('chatId').value.trim();
+            
+            if (!botToken || !chatId) {
+                showTelegramStatus('Please fill in both fields', 'error');
+                return;
+            }
+            
+            localStorage.setItem('telegramBotToken', botToken);
+            localStorage.setItem('telegramChatId', chatId);
+            
+            showTelegramStatus('Settings saved! You will receive notifications when tests are completed.', 'success');
+        }
+
+        function showTelegramStatus(message, type) {
+            const statusDiv = document.getElementById('telegramStatus');
+            statusDiv.className = `telegram-status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        function loadTelegramConfig() {
+            const botToken = localStorage.getItem('telegramBotToken');
+            const chatId = localStorage.getItem('telegramChatId');
+            
+            if (botToken) document.getElementById('botToken').value = botToken;
+            if (chatId) document.getElementById('chatId').value = chatId;
+        }
+
+        function updateProgressStats() {
+            const history = JSON.parse(localStorage.getItem('testHistory') || '[]');
+            
+            if (history.length === 0) {
+                return;
+            }
+
+            const totalTests = history.length;
+            const avgScore = Math.round(history.reduce((sum, test) => sum + test.percentage, 0) / totalTests);
+            const bestScore = Math.max(...history.map(test => test.percentage));
+            const latestScore = history[history.length - 1].percentage;
+
+            document.getElementById('totalTests').textContent = totalTests;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            document.getElementById('bestScore').textContent = bestScore + '%';
+            document.getElementById('latestScore').textContent = latestScore + '%';
+
+            updateHistoryTable(history);
+            drawChart(history);
+        }
+
+        function updateHistoryTable(history) {
+            const tbody = document.getElementById('historyBody');
+            
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No tests completed yet</td></tr>';
+                return;
+            }
+
+            const testNames = {
+                'maths': 'Maths',
+                'verbal': 'Verbal',
+                'nonverbal': 'Non-Verbal'
+            };
+
+            tbody.innerHTML = history.slice().reverse().map(test => `
+                <tr>
+                    <td>${test.date}</td>
+                    <td>${test.time}</td>
+                    <td><span class="badge ${test.testType}">${testNames[test.testType]}</span></td>
+                    <td>${test.correct}/${test.total}</td>
+                    <td><strong>${test.percentage}%</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function drawChart(history) {
+            const canvas = document.getElementById('scoreChart');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (history.length === 0) {
+                ctx.fillStyle = '#999';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Complete some tests to see your progress!', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+
+            const padding = 60;
+            const chartWidth = canvas.width - padding * 2;
+            const chartHeight = canvas.height - padding * 2;
+
+            // Draw axes
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+
+            // Draw grid lines
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (chartHeight / 10) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText((100 - i * 10) + '%', padding - 10, y + 4);
+            }
+
+            // Plot data points
+            const stepX = chartWidth / (history.length - 1 || 1);
+            
+            const colors = {
+                'maths': '#4facfe',
+                'verbal': '#43e97b',
+                'nonverbal': '#fa709a'
+            };
+
+            history.forEach((test, index) => {
+                const x = padding + stepX * index;
+                const y = canvas.height - padding - (test.percentage / 100) * chartHeight;
+                
+                ctx.fillStyle = colors[test.testType] || '#667eea';
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (index > 0) {
+                    const prevTest = history[index - 1];
+                    const prevX = padding + stepX * (index - 1);
+                    const prevY = canvas.height - padding - (prevTest.percentage / 100) * chartHeight;
+                    
+                    ctx.strokeStyle = colors[test.testType] || '#667eea';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(prevX, prevY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+            });
+
+            // Draw legend
+            const legendY = 30;
+            const legendItems = [
+                { label: 'Maths', color: '#4facfe' },
+                { label: 'Verbal', color: '#43e97b' },
+                { label: 'Non-Verbal', color: '#fa709a' }
+            ];
+
+            legendItems.forEach((item, index) => {
+                const x = canvas.width - 200 + index * 70;
+                ctx.fillStyle = item.color;
+                ctx.fillRect(x, legendY, 12, 12);
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(item.label, x + 18, legendY + 10);
+            });
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all test history? This cannot be undone.')) {
+                localStorage.removeItem('testHistory');
+                updateProgressStats();
+                showSection('progress');
+            }
+        }
+
+        function showSection(section) {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            
+            if (section === 'home') {
+                document.getElementById('home').style.display = 'grid';
+                document.getElementById('progress-area').classList.remove('active');
+                document.getElementById('test-area').classList.remove('active');
+                navButtons[0].classList.add('active');
+            } else if (section === 'progress') {
+                document.getElementById('home').style.display = 'none';
+                document.getElementById('progress-area').classList.add('active');
+                document.getElementById('test-area').classList.remove('active');
+                navButtons[1].classList.add('active');
+                updateProgressStats();
+            }
+        }
+
+        function goHome() {
+            clearInterval(timer);
+            showSection('home');
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('questions').innerHTML = '';
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            loadTelegramConfig();
+            updateProgressStats();
+        });
+    
