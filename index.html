@@ -105,6 +105,7 @@
         .test-card p {
             font-size: 0.9em;
             opacity: 0.9;
+            margin: 5px 0;
         }
 
         .test-card.maths {
@@ -149,6 +150,7 @@
         .question h4 {
             margin-bottom: 15px;
             color: #333;
+            font-size: 1.1em;
         }
 
         .options {
@@ -351,6 +353,18 @@
             background: #f8d7da;
             color: #721c24;
         }
+
+        .info-note {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-note strong {
+            color: #1976d2;
+        }
     </style>
 </head>
 <body>
@@ -366,6 +380,9 @@
 
         <div class="content">
             <div id="home" class="test-selection">
+                <div class="info-note">
+                    <strong>📝 Note:</strong> Questions are randomly shuffled each time you start a test, so you'll get different questions in a different order every time!
+                </div>
                 <div class="test-card maths" onclick="startTest('maths')">
                     <h3>📊 Maths</h3>
                     <p>15 minutes • 15 questions</p>
@@ -388,6 +405,7 @@
                 
                 <div class="telegram-config">
                     <h4>📱 Telegram Notification Settings</h4>
+                    <p style="font-size: 0.9em; margin-bottom: 10px;">Get instant notifications when tests are completed!</p>
                     <input type="text" id="botToken" placeholder="Bot Token (from @BotFather)">
                     <input type="text" id="chatId" placeholder="Chat ID">
                     <button class="btn" onclick="saveTelegramConfig()">Save Settings</button>
@@ -420,22 +438,24 @@
 
                 <div class="chart-container">
                     <h3 style="margin-bottom: 20px;">Test History</h3>
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Test Type</th>
-                                <th>Score</th>
-                                <th>Percentage</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyBody">
-                            <tr>
-                                <td colspan="5" style="text-align: center; color: #999;">No tests completed yet</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div style="overflow-x: auto;">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Test Type</th>
+                                    <th>Score</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #999;">No tests completed yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div style="text-align: center; margin-top: 20px;">
@@ -456,6 +476,20 @@
     </div>
 
     <script>
+        // In-memory storage with localStorage fallback
+        let testHistory = [];
+        let telegramConfig = { botToken: '', chatId: '' };
+        
+        // Try to load from localStorage if available
+        try {
+            const savedHistory = localStorage.getItem('testHistory');
+            const savedTelegram = localStorage.getItem('telegramConfig');
+            if (savedHistory) testHistory = JSON.parse(savedHistory);
+            if (savedTelegram) telegramConfig = JSON.parse(savedTelegram);
+        } catch (e) {
+            console.log('localStorage not available, using memory storage');
+        }
+
         let currentTest = null;
         let questions = [];
         let answers = {};
@@ -478,7 +512,12 @@
             { q: "If 5 pencils cost £2.50, how much do 8 pencils cost?", options: ["£3.50", "£4.00", "£4.50", "£5.00"], correct: 1 },
             { q: "What is the smallest prime number greater than 20?", options: ["21", "22", "23", "25"], correct: 2 },
             { q: "Calculate: 7² - 15", options: ["29", "34", "39", "44"], correct: 1 },
-            { q: "A bag contains 120 sweets. If 3/8 are red, how many are red?", options: ["40", "45", "50", "55"], correct: 1 }
+            { q: "A bag contains 120 sweets. If 3/8 are red, how many are red?", options: ["40", "45", "50", "55"], correct: 1 },
+            { q: "What is 456 - 189?", options: ["267", "277", "257", "247"], correct: 0 },
+            { q: "Calculate: 24 × 8", options: ["182", "192", "202", "212"], correct: 1 },
+            { q: "What is 60% of 150?", options: ["80", "85", "90", "95"], correct: 2 },
+            { q: "If a square has a side of 7cm, what is its area?", options: ["28cm²", "35cm²", "42cm²", "49cm²"], correct: 3 },
+            { q: "What is 5/6 - 1/3?", options: ["1/2", "2/3", "1/6", "1/3"], correct: 0 }
         ];
 
         const verbalQuestions = [
@@ -501,25 +540,35 @@
             { q: "Which word does NOT belong: Happy, Sad, Angry, Table", options: ["Happy", "Sad", "Angry", "Table"], correct: 3 },
             { q: "STEERING WHEEL is to CAR as RUDDER is to:", options: ["Plane", "Boat", "Bicycle", "Train"], correct: 1 },
             { q: "Find the synonym of RAPID:", options: ["Slow", "Fast", "Careful", "Lazy"], correct: 1 },
-            { q: "Complete the analogy: DAY is to NIGHT as LIGHT is to:", options: ["Bright", "Dark", "Sun", "Moon"], correct: 1 }
+            { q: "Complete the analogy: DAY is to NIGHT as LIGHT is to:", options: ["Bright", "Dark", "Sun", "Moon"], correct: 1 },
+            { q: "Find the opposite of GENEROUS:", options: ["Kind", "Selfish", "Giving", "Helpful"], correct: 1 },
+            { q: "PAINTER is to CANVAS as SCULPTOR is to:", options: ["Museum", "Stone", "Art", "Gallery"], correct: 1 },
+            { q: "Which word means HAPPY:", options: ["Sad", "Angry", "Joyful", "Tired"], correct: 2 },
+            { q: "Complete: Hot is to Cold as Wet is to _____", options: ["Water", "Dry", "Rain", "Ocean"], correct: 1 },
+            { q: "Find the odd one out: Car, Bus, Train, Chair", options: ["Car", "Bus", "Train", "Chair"], correct: 3 }
         ];
 
         const nonVerbalQuestions = [
-            { q: "Which shape completes the pattern?", type: "pattern", correct: 2 },
-            { q: "Find the odd one out:", type: "oddone", correct: 3 },
-            { q: "What comes next in the sequence?", type: "sequence", correct: 1 },
-            { q: "Complete the matrix:", type: "matrix", correct: 0 },
-            { q: "Which shape is rotated 90° clockwise?", type: "rotation", correct: 2 },
-            { q: "Find the mirror image:", type: "mirror", correct: 1 },
-            { q: "Which pattern continues the series?", type: "series", correct: 3 },
-            { q: "Identify the identical shape:", type: "identical", correct: 0 },
-            { q: "What is the next shape in the sequence?", type: "sequence2", correct: 2 },
-            { q: "Complete the analogy:", type: "analogy", correct: 1 },
-            { q: "Find the matching pair:", type: "pair", correct: 3 },
-            { q: "Which shape fits in the space?", type: "fit", correct: 0 },
-            { q: "Identify the pattern rule:", type: "rule", correct: 2 },
-            { q: "Which is the rotated version?", type: "rotate2", correct: 1 },
-            { q: "Complete the grid pattern:", type: "grid", correct: 3 }
+            { q: "Which shape completes the pattern?", type: "pattern", options: ["Option A", "Option B", "Option C", "Option D"], correct: 2 },
+            { q: "Find the odd one out:", type: "oddone", options: ["Shape A", "Shape B", "Shape C", "Shape D"], correct: 2 },
+            { q: "What comes next in the sequence?", type: "sequence", options: ["Next A", "Next B", "Next C", "Next D"], correct: 1 },
+            { q: "Complete the matrix:", type: "matrix", options: ["Choice A", "Choice B", "Choice C", "Choice D"], correct: 0 },
+            { q: "Which shape is rotated 90° clockwise?", type: "rotation", options: ["Rotate A", "Rotate B", "Rotate C", "Rotate D"], correct: 2 },
+            { q: "Find the mirror image:", type: "mirror", options: ["Mirror A", "Mirror B", "Mirror C", "Mirror D"], correct: 1 },
+            { q: "Which pattern continues the series?", type: "series", options: ["Series A", "Series B", "Series C", "Series D"], correct: 3 },
+            { q: "Identify the identical shape:", type: "identical", options: ["Same A", "Same B", "Same C", "Same D"], correct: 0 },
+            { q: "What is the next shape in the sequence?", type: "sequence2", options: ["Seq A", "Seq B", "Seq C", "Seq D"], correct: 2 },
+            { q: "Complete the analogy:", type: "analogy", options: ["Analog A", "Analog B", "Analog C", "Analog D"], correct: 1 },
+            { q: "Find the matching pair:", type: "pair", options: ["Pair A", "Pair B", "Pair C", "Pair D"], correct: 3 },
+            { q: "Which shape fits in the space?", type: "fit", options: ["Fit A", "Fit B", "Fit C", "Fit D"], correct: 0 },
+            { q: "Identify the pattern rule:", type: "rule", options: ["Rule A", "Rule B", "Rule C", "Rule D"], correct: 2 },
+            { q: "Which is the rotated version?", type: "rotate2", options: ["Ver A", "Ver B", "Ver C", "Ver D"], correct: 1 },
+            { q: "Complete the grid pattern:", type: "grid", options: ["Grid A", "Grid B", "Grid C", "Grid D"], correct: 3 },
+            { q: "Find the reflection:", type: "reflect", options: ["Ref A", "Ref B", "Ref C", "Ref D"], correct: 2 },
+            { q: "Which shape is different?", type: "different", options: ["Diff A", "Diff B", "Diff C", "Diff D"], correct: 1 },
+            { q: "Complete the transformation:", type: "transform", options: ["Trans A", "Trans B", "Trans C", "Trans D"], correct: 0 },
+            { q: "Find the similar pattern:", type: "similar", options: ["Sim A", "Sim B", "Sim C", "Sim D"], correct: 3 },
+            { q: "Which completes the sequence?", type: "complete", options: ["Comp A", "Comp B", "Comp C", "Comp D"], correct: 2 }
         ];
 
         function drawNVRQuestion(canvas, type, index) {
@@ -583,11 +632,12 @@
         }
 
         function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
             }
-            return array;
+            return newArray;
         }
 
         function renderQuestions() {
@@ -699,8 +749,6 @@
         }
 
         function saveTestResult(correct, total, percentage) {
-            const history = JSON.parse(localStorage.getItem('testHistory') || '[]');
-            
             const result = {
                 date: new Date().toLocaleDateString(),
                 time: new Date().toLocaleTimeString(),
@@ -711,15 +759,18 @@
                 timestamp: new Date().getTime()
             };
             
-            history.push(result);
-            localStorage.setItem('testHistory', JSON.stringify(history));
+            testHistory.push(result);
+            
+            // Try to save to localStorage
+            try {
+                localStorage.setItem('testHistory', JSON.stringify(testHistory));
+            } catch (e) {
+                console.log('Could not save to localStorage');
+            }
         }
 
         async function sendTelegramNotification(correct, total, percentage) {
-            const botToken = localStorage.getItem('telegramBotToken');
-            const chatId = localStorage.getItem('telegramChatId');
-            
-            if (!botToken || !chatId) {
+            if (!telegramConfig.botToken || !telegramConfig.chatId) {
                 console.log('Telegram not configured');
                 return;
             }
@@ -742,13 +793,13 @@
                   'Keep working hard! You\'re improving! 💪'}`;
 
             try {
-                const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                const response = await fetch(`https://api.telegram.org/bot${telegramConfig.botToken}/sendMessage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        chat_id: chatId,
+                        chat_id: telegramConfig.chatId,
                         text: message,
                         parse_mode: 'Markdown'
                     })
@@ -771,8 +822,14 @@
                 return;
             }
             
-            localStorage.setItem('telegramBotToken', botToken);
-            localStorage.setItem('telegramChatId', chatId);
+            telegramConfig = { botToken, chatId };
+            
+            // Try to save to localStorage
+            try {
+                localStorage.setItem('telegramConfig', JSON.stringify(telegramConfig));
+            } catch (e) {
+                console.log('Could not save to localStorage');
+            }
             
             showTelegramStatus('Settings saved! You will receive notifications when tests are completed.', 'success');
         }
@@ -784,32 +841,36 @@
         }
 
         function loadTelegramConfig() {
-            const botToken = localStorage.getItem('telegramBotToken');
-            const chatId = localStorage.getItem('telegramChatId');
-            
-            if (botToken) document.getElementById('botToken').value = botToken;
-            if (chatId) document.getElementById('chatId').value = chatId;
+            if (telegramConfig.botToken) {
+                document.getElementById('botToken').value = telegramConfig.botToken;
+            }
+            if (telegramConfig.chatId) {
+                document.getElementById('chatId').value = telegramConfig.chatId;
+            }
         }
 
         function updateProgressStats() {
-            const history = JSON.parse(localStorage.getItem('testHistory') || '[]');
-            
-            if (history.length === 0) {
+            if (testHistory.length === 0) {
+                document.getElementById('totalTests').textContent = '0';
+                document.getElementById('avgScore').textContent = '0%';
+                document.getElementById('bestScore').textContent = '0%';
+                document.getElementById('latestScore').textContent = '-';
+                drawChart([]);
                 return;
             }
 
-            const totalTests = history.length;
-            const avgScore = Math.round(history.reduce((sum, test) => sum + test.percentage, 0) / totalTests);
-            const bestScore = Math.max(...history.map(test => test.percentage));
-            const latestScore = history[history.length - 1].percentage;
+            const totalTests = testHistory.length;
+            const avgScore = Math.round(testHistory.reduce((sum, test) => sum + test.percentage, 0) / totalTests);
+            const bestScore = Math.max(...testHistory.map(test => test.percentage));
+            const latestScore = testHistory[testHistory.length - 1].percentage;
 
             document.getElementById('totalTests').textContent = totalTests;
             document.getElementById('avgScore').textContent = avgScore + '%';
             document.getElementById('bestScore').textContent = bestScore + '%';
             document.getElementById('latestScore').textContent = latestScore + '%';
 
-            updateHistoryTable(history);
-            drawChart(history);
+            updateHistoryTable(testHistory);
+            drawChart(testHistory);
         }
 
         function updateHistoryTable(history) {
@@ -890,7 +951,7 @@
             };
 
             history.forEach((test, index) => {
-                const x = padding + stepX * index;
+                const x = padding + (history.length === 1 ? chartWidth / 2 : stepX * index);
                 const y = canvas.height - padding - (test.percentage / 100) * chartHeight;
                 
                 ctx.fillStyle = colors[test.testType] || '#667eea';
@@ -921,7 +982,7 @@
             ];
 
             legendItems.forEach((item, index) => {
-                const x = canvas.width - 200 + index * 70;
+                const x = canvas.width - 220 + index * 75;
                 ctx.fillStyle = item.color;
                 ctx.fillRect(x, legendY, 12, 12);
                 ctx.fillStyle = '#333';
@@ -933,9 +994,13 @@
 
         function clearHistory() {
             if (confirm('Are you sure you want to clear all test history? This cannot be undone.')) {
-                localStorage.removeItem('testHistory');
+                testHistory = [];
+                try {
+                    localStorage.removeItem('testHistory');
+                } catch (e) {
+                    console.log('Could not clear localStorage');
+                }
                 updateProgressStats();
-                showSection('progress');
             }
         }
 
@@ -944,7 +1009,7 @@
             navButtons.forEach(btn => btn.classList.remove('active'));
             
             if (section === 'home') {
-                document.getElementById('home').style.display = 'grid';
+                document.getElementById('home').style.display = 'block';
                 document.getElementById('progress-area').classList.remove('active');
                 document.getElementById('test-area').classList.remove('active');
                 navButtons[0].classList.add('active');
@@ -969,4 +1034,6 @@
             loadTelegramConfig();
             updateProgressStats();
         });
-    
+    </script>
+</body>
+</html>
